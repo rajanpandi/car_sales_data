@@ -1,0 +1,133 @@
+import numpy as np
+import pickle
+import streamlit as st
+
+# Load the trained model
+train_model = pickle.load(open('model1.pkl', 'rb'))
+
+# Define mappings for categorical inputs
+category_mapping = {
+    'Hatchback': 2,
+    'SUV': 7,
+    'Sedan': 8,
+    'MUV': 4,
+    'Minivans': 5,
+    'Coupe': 1,
+    'Pickup Trucks': 6,
+    'Convertibles': 0,
+    'Hybrids': 3,
+    'Wagon': 9
+}
+
+transmission_mapping = {
+    'Manual': 0,
+    'Automatic': 1
+}
+
+oem_mapping = {
+    'Maruti': 20,
+    'Hyundai': 9,
+    'Honda': 8,
+    'Tata': 29,
+    'Mahindra': 17,
+    'Toyota': 30,
+    'Ford': 6,
+    'Renault': 27,
+    'Volkswagen': 31,
+    'Mercedes-Benz': 21,
+    'BMW': 1,
+    'Skoda': 28,
+    'Audi': 0,
+    'Kia': 13,
+    'Jeep': 12,
+    'MG': 16,
+    'Chevrolet': 2,
+    'Nissan': 24,
+    'Datsun': 4,
+    'Land Rover': 14,
+    'Volvo': 32,
+    'Jaguar': 11,
+    'Fiat': 5,
+    'Mitsubishi': 23,
+    'Mini': 22,
+    'Citroen': 3,
+    'Porsche': 26,
+    'Lexus': 15,
+    'Mahindra Renault': 18,
+    'Isuzu': 10,
+    'Mahindra Ssangyong': 19,
+    'Hindustan Motors': 7,
+    'Opel': 25
+}
+
+insurance_mapping = {
+    'Third Party insurance': 2,
+    'Comprehensive': 0,
+    'Zero Dep': 3,
+    'Not Available': 1,
+    'first Party insurance': 4,
+    'second Party insurance': 5
+}
+
+fuel_mapping = {
+    'Petrol': 4,
+    'Diesel': 1,
+    'CNG': 0,
+    'Electric': 2,
+    'LPG': 3
+}
+
+# Model year options based on counts
+model_year_options = [
+    2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014,
+    2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005, 2004,
+    2003, 2002, 2001, 1999, 1998, 1997, 1995, 1985
+]
+from sklearn.preprocessing import StandardScaler
+scaler=StandardScaler()
+def predict_car_price(input_data):
+    
+    arrange_array = np.asarray(input_data)
+    input_data_reshape = arrange_array.reshape(1, -1)
+    prediction = train_model.predict(input_data_reshape)
+    return prediction[0]
+
+def main():
+    st.title('Car Price Prediction Web App')
+
+    # Input fields
+    category = st.selectbox('Car Type', options=list(category_mapping.keys()))
+    bt = category_mapping.get(category, 0)  # Convert category to numeric code
+    
+    km = st.slider('KM', min_value=0, max_value=200000, value=10000)
+    
+    transmission = st.selectbox('Transmission', options=list(transmission_mapping.keys()))
+    transmission_code = transmission_mapping.get(transmission, 0)  # Convert transmission to numeric code
+    
+    oem = st.selectbox('OEM', options=list(oem_mapping.keys()))
+    oem_code = oem_mapping.get(oem, 0)  # Convert OEM to numeric code
+    
+    insurance_validity = st.selectbox('Insurance Validity', options=list(insurance_mapping.keys()))
+    insurance_code = insurance_mapping.get(insurance_validity, 0)  # Convert insurance validity to numeric code
+    
+    fuel_type = st.selectbox('Fuel Type', options=list(fuel_mapping.keys()))
+    fuel_code = fuel_mapping.get(fuel_type, 0)  # Convert fuel type to numeric code
+    
+    ownerNo = st.number_input('Owner Number', min_value=0, max_value=10, value=3)
+    Mileage = st.number_input('Mileage', min_value=0, max_value=50, value=23)
+    
+    # Model year input
+    model_year = st.selectbox('Model Year', options=model_year_options)
+
+    input_data = [bt, km, transmission_code, ownerNo, oem_code, insurance_code, fuel_code, Mileage, model_year]
+
+    # Get prediction
+    if st.button('Predict Car Price'):
+        try:
+            prediction = predict_car_price(input_data)
+            st.success(f'Predicted Car Price: {prediction:.2f}')
+        except Exception as e:
+            st.error(f'Error: {e}')
+
+if __name__ == '__main__':
+    main()
